@@ -138,9 +138,17 @@ output) support it, so the UI never offers something that fails halfway.
         typed text ─────────────────────────────▲
 ```
 
-See [`docs/architecture.md`](docs/architecture.md) for detail,
-[`docs/api.md`](docs/api.md) for the HTTP API, and
-[`docs/usage.md`](docs/usage.md) for a walk-through.
+## Documentation
+
+- [`docs/usage.md`](docs/usage.md) — how to use the app, step by step
+- [`docs/architecture.md`](docs/architecture.md) — how it works inside
+- [`docs/api.md`](docs/api.md) — the HTTP API
+- [`docs/development.md`](docs/development.md) — setup, tests, project layout,
+  how to add a language
+- [`docs/decisions.md`](docs/decisions.md) — key decisions & gotchas (**read this
+  before changing models, env, or `.gitignore`**)
+- [`docs/roadmap.md`](docs/roadmap.md) — planned features & ideas
+- [`CHANGELOG.md`](CHANGELOG.md) — what changed and when
 
 ## Project layout
 
