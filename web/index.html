@@ -17,6 +17,8 @@
         <p class="sub">Speak or type. Translate to any language. Hear it back.</p>
       </header>
 
+      <div id="warmup" class="warmup hidden"></div>
+
       <div class="tabs" role="tablist">
         <button class="tab active" data-mode="text" role="tab">Type text</button>
         <button class="tab" data-mode="audio" role="tab">Speak / upload</button>
@@ -42,6 +44,7 @@
               <input id="file-input" type="file" accept="audio/*" hidden />
             </label>
           </div>
+          <div id="live-transcript" class="live hidden"></div>
           <audio id="input-preview" class="preview hidden" controls></audio>
           <label class="field">
             <span>Accent / vocabulary hints <em>(optional)</em></span>
@@ -55,11 +58,11 @@
 
         <!-- Controls -->
         <div class="controls">
-          <label class="select">
+          <label class="select" id="from-control">
             <span>From</span>
             <select id="source-lang"></select>
           </label>
-          <span class="arrow">→</span>
+          <span class="arrow" id="lang-arrow">→</span>
           <label class="select">
             <span>To</span>
             <select id="target-lang"></select>

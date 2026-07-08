@@ -7,13 +7,23 @@ Endpoints:
   GET  /                     -> the web UI (served from ../web)
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from app import config, languages, pipeline
+from app import config, languages, pipeline, warmup
 
-app = FastAPI(title="AI Translation Service", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start loading the models as soon as the server boots.
+    warmup.start_background()
+    yield
+
+
+app = FastAPI(title="AI Translation Service", version="0.1.0", lifespan=lifespan)
 
 
 class TextRequest(BaseModel):
@@ -25,19 +35,21 @@ class TextRequest(BaseModel):
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok"}
+    # Includes model warmup state: {ready, progress, error}.
+    return {"status": "ok", **warmup.STATE}
 
 
 @app.get("/api/languages")
 def list_languages() -> dict:
-    return {"languages": languages.public_list()}
+    # "languages" = sources (the 12); "targets" = the 12 plus Hinglish.
+    return {"languages": languages.public_list(), "targets": languages.target_list()}
 
 
 @app.post("/api/translate/text")
 def translate_text_endpoint(req: TextRequest) -> dict:
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="text is empty")
-    if languages.get(req.target_lang) is None:
+    if not languages.is_valid_target(req.target_lang):
         raise HTTPException(status_code=400, detail="unknown target_lang")
     if req.source_lang and languages.get(req.source_lang) is None:
         raise HTTPException(status_code=400, detail="unknown source_lang")
@@ -54,7 +66,7 @@ async def translate_audio_endpoint(
     hints: str | None = Form(None),
     speak: bool = Form(True),
 ) -> dict:
-    if languages.get(target_lang) is None:
+    if not languages.is_valid_target(target_lang):
         raise HTTPException(status_code=400, detail="unknown target_lang")
     if source_lang and languages.get(source_lang) is None:
         raise HTTPException(status_code=400, detail="unknown source_lang")

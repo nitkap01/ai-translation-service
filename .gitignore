@@ -10,8 +10,9 @@ venv/
 # Env & secrets
 .env
 
-# Models / caches (never commit multi-GB weights)
-models/
+# Model weight caches (never commit multi-GB weights).
+# Anchored to repo root so it does NOT match the app/models/ source package.
+/models/
 *.bin
 *.safetensors
 

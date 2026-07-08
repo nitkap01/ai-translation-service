@@ -62,3 +62,23 @@ def get_by_whisper(whisper_code: str | None) -> Language | None:
 def public_list() -> list[dict]:
     """The list handed to the UI dropdowns."""
     return [{"code": lang.code, "name": lang.name} for lang in LANGUAGES]
+
+
+# Hinglish is a special output: Hindi translated, then written in Latin letters
+# ("Roman Hindi") while still spoken as Hindi. It's a target option only.
+HINGLISH = {"code": "hi-Latn", "name": "Hinglish (Roman Hindi)"}
+
+
+def is_latin_script(lang: Language) -> bool:
+    """True if the language is written in the Latin alphabet."""
+    return lang.nllb.endswith("_Latn")
+
+
+def is_valid_target(code: str | None) -> bool:
+    """Valid 'To' options are the 12 languages plus Hinglish."""
+    return code == HINGLISH["code"] or get(code) is not None
+
+
+def target_list() -> list[dict]:
+    """Options for the 'To' dropdown: the languages plus Hinglish."""
+    return public_list() + [HINGLISH]

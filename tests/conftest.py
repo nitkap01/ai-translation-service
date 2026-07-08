@@ -6,6 +6,11 @@ keep the same input/output shape as the real functions, so they exercise the
 real pipeline, endpoints, and audio handling.
 """
 
+import os
+
+# Never load real models during tests.
+os.environ["DISABLE_WARMUP"] = "1"
+
 import numpy as np
 import pytest
 
@@ -31,11 +36,16 @@ def fake_synthesize(text, mms_code):
     return np.zeros(8000, dtype=np.float32), 16000
 
 
+def fake_romanize(text):
+    return "ROMAN:" + text
+
+
 @pytest.fixture(autouse=True)
 def fake_models(monkeypatch):
     monkeypatch.setattr(asr, "transcribe", fake_transcribe)
     monkeypatch.setattr(mt, "translate", fake_translate)
     monkeypatch.setattr(tts, "synthesize", fake_synthesize)
+    monkeypatch.setattr(tts, "romanize", fake_romanize)
 
 
 @pytest.fixture

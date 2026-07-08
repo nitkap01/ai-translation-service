@@ -22,7 +22,15 @@ this a real **any-language → any-language** service.
   target language, hear it spoken back.
 - **Type → translated audio.** Type text, choose the language, get the
   translation plus a spoken version.
-- **Auto language detection** for both speech and text (with a manual override).
+- **Auto language detection** for both speech and text. Audio mode shows only
+  "To" and detects the spoken language for you; the detected language is filled
+  into "From".
+- **Live words while you record** — a fast in-browser preview shows what you're
+  saying; the final transcript comes from the on-device Whisper model.
+- **Hinglish output** — translate to **Roman Hindi** (shown in Latin letters,
+  still spoken as Hindi).
+- **Mixed English + Hindi spoken correctly** — English words or names inside a
+  Hindi sentence are voiced (with the English voice) instead of being dropped.
 - **Accent / vocabulary hints.** Give Whisper a few words you often say (names,
   places, jargon) to help it understand your accent — no training needed.
 
@@ -64,11 +72,22 @@ cp .env.example .env
 ## Run
 
 ```bash
-uvicorn app.main:app --reload
+./start.sh
 ```
 
-Open **http://localhost:8000**. The first request loads the models into memory
-(a few seconds); after that it's quick.
+Runs the server with the project's virtualenv and opens
+**http://localhost:8000**. On boot it **preloads the models** (Whisper + NLLB +
+the English/Hindi voices) so the first translation is fast — the page shows a
+"warming up" banner until they're ready.
+
+> Always start with `./start.sh` (or `.venv/bin/python -m uvicorn app.main:app`).
+> Launching with a system `python`/`uvicorn` gives `ModuleNotFoundError: No
+> module named 'torch'`, because the ML packages live in `.venv`, not the
+> system Python.
+
+**Local vs cloud:** everything runs **on your machine**. Hugging Face is
+contacted only the first time a model is downloaded (then it's cached on disk);
+all transcription, translation, and speech happen locally with no network calls.
 
 ## Test
 
@@ -86,7 +105,7 @@ so you can listen.
 ## Supported languages
 
 English, Hindi, Spanish, French, German, Italian, Portuguese, Russian, Arabic,
-Bengali, Tamil, Marathi.
+Bengali, Tamil, Marathi — plus **Hinglish (Roman Hindi)** as an output option.
 
 A language is only listed if **all three** stages (speech, translation, speech
 output) support it, so the UI never offers something that fails halfway.

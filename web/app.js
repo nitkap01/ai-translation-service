@@ -7,24 +7,25 @@ const state = {
   recorder: null,
   chunks: [],
   audioBlob: null, // the recorded or uploaded audio
+  userSetSource: false, // did the user pick a "From" language by hand?
+  recognition: null, // live speech preview while recording
 };
 
 // --- Setup ------------------------------------------------------------------
 
 async function loadLanguages() {
   const res = await fetch("/api/languages");
-  const { languages } = await res.json();
+  const { languages, targets } = await res.json();
 
   const target = $("#target-lang");
   const source = $("#source-lang");
   source.innerHTML = '<option value="">Auto-detect</option>';
-  for (const lang of languages) {
-    target.append(new Option(lang.name, lang.code));
-    source.append(new Option(lang.name, lang.code));
-  }
-  // Sensible defaults for this user: Hindi <-> English.
+  for (const lang of languages) source.append(new Option(lang.name, lang.code));
+  for (const t of targets || languages) target.append(new Option(t.name, t.code));
+
+  // Default: auto-detect what you say/type, translate to English.
   target.value = "en";
-  source.value = "hi";
+  source.value = ""; // Auto-detect
 }
 
 // --- Tabs -------------------------------------------------------------------
@@ -37,10 +38,63 @@ document.querySelectorAll(".tab").forEach((tab) => {
     document.querySelectorAll(".pane").forEach((p) => {
       p.classList.toggle("hidden", p.dataset.pane !== state.mode);
     });
+    applyModeUI();
   });
 });
 
+// In audio mode the language is auto-detected, so hide "From" and show only "To".
+function applyModeUI() {
+  const audioMode = state.mode === "audio";
+  $("#from-control").classList.toggle("hidden", audioMode);
+  $("#lang-arrow").classList.toggle("hidden", audioMode);
+}
+
+// Track manual "From" picks, so auto-detect stays on until you override it.
+$("#source-lang").addEventListener("change", () => {
+  state.userSetSource = $("#source-lang").value !== "";
+});
+
 // --- Recording --------------------------------------------------------------
+
+// Live words while recording, using the browser's built-in speech recognition
+// (instant). The authoritative transcript still comes from the on-device
+// Whisper model when you press Translate.
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function startLivePreview() {
+  const live = $("#live-transcript");
+  if (!SpeechRec) {
+    live.classList.add("hidden");
+    return;
+  }
+  try {
+    const rec = new SpeechRec();
+    rec.lang = navigator.language || "en-US";
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.onresult = (e) => {
+      let text = "";
+      for (const r of e.results) text += r[0].transcript;
+      live.textContent = text.trim() || "Listening…";
+    };
+    rec.onerror = () => {};
+    state.recognition = rec;
+    live.textContent = "Listening…";
+    live.classList.remove("hidden");
+    rec.start();
+  } catch {
+    live.classList.add("hidden");
+  }
+}
+
+function stopLivePreview() {
+  if (state.recognition) {
+    try {
+      state.recognition.stop();
+    } catch {}
+    state.recognition = null;
+  }
+}
 
 $("#record-btn").addEventListener("click", async () => {
   const btn = $("#record-btn");
@@ -55,6 +109,7 @@ $("#record-btn").addEventListener("click", async () => {
     state.recorder.ondataavailable = (e) => state.chunks.push(e.data);
     state.recorder.onstop = () => {
       stream.getTracks().forEach((t) => t.stop());
+      stopLivePreview();
       state.audioBlob = new Blob(state.chunks, { type: "audio/webm" });
       const url = URL.createObjectURL(state.audioBlob);
       const preview = $("#input-preview");
@@ -65,6 +120,7 @@ $("#record-btn").addEventListener("click", async () => {
       $("#rec-status").textContent = "Recorded ✓";
     };
     state.recorder.start();
+    startLivePreview();
     btn.classList.add("recording");
     btn.textContent = "■ Stop";
     $("#rec-status").textContent = "Recording…";
@@ -90,7 +146,9 @@ $("#go-btn").addEventListener("click", translate);
 async function translate() {
   hideError();
   const targetLang = $("#target-lang").value;
-  const sourceLang = $("#source-lang").value;
+  // Text mode respects a manual "From"; audio always auto-detects.
+  const sourceLang =
+    state.mode === "text" && state.userSetSource ? $("#source-lang").value : "";
   const speak = $("#speak-toggle").checked;
   const btn = $("#go-btn");
 
@@ -159,6 +217,12 @@ function showResult(data) {
     detected.classList.add("hidden");
   }
 
+  // Reflect the detected language in the "From" selector. A programmatic value
+  // change does not fire "change", so auto-detect stays on for the next run.
+  if (data.source_lang) {
+    $("#source-lang").value = data.source_lang;
+  }
+
   $("#target-title").textContent = `Translation — ${langName(data.target_lang)}`;
   $("#target-text").textContent = data.target_text || "—";
 
@@ -193,3 +257,35 @@ function hideError() {
 }
 
 loadLanguages().catch(() => showError("Could not reach the server."));
+applyModeUI();
+
+// --- Model warmup status ----------------------------------------------------
+
+// Poll until the models finish loading; keep Translate disabled until then, so
+// the first click is fast instead of waiting ~30s for models to load.
+async function pollReady() {
+  const banner = $("#warmup");
+  const go = $("#go-btn");
+  try {
+    const h = await (await fetch("/api/health")).json();
+    if (h.error) {
+      banner.textContent = "⚠ Model load failed: " + h.error;
+      banner.classList.remove("hidden");
+      banner.classList.add("error");
+      return;
+    }
+    if (h.ready) {
+      banner.classList.add("hidden");
+      go.disabled = false;
+      return;
+    }
+    banner.textContent = "⏳ Warming up models — " + (h.progress || "loading") +
+      " (first start only)";
+    banner.classList.remove("hidden");
+    go.disabled = true;
+    setTimeout(pollReady, 1500);
+  } catch {
+    setTimeout(pollReady, 2000);
+  }
+}
+pollReady();

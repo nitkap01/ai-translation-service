@@ -7,13 +7,31 @@ client = TestClient(app)
 
 
 def test_health():
-    assert client.get("/api/health").json() == {"status": "ok"}
+    body = client.get("/api/health").json()
+    assert body["status"] == "ok"
+    assert "ready" in body  # warmup state is included
 
 
 def test_languages_endpoint_lists_hindi():
     data = client.get("/api/languages").json()
     codes = [lang["code"] for lang in data["languages"]]
     assert "hi" in codes and "en" in codes
+
+
+def test_targets_include_hinglish():
+    data = client.get("/api/languages").json()
+    target_codes = [t["code"] for t in data["targets"]]
+    assert "hi-Latn" in target_codes
+    assert "hi" in target_codes
+
+
+def test_translate_text_to_hinglish_ok():
+    res = client.post(
+        "/api/translate/text",
+        json={"text": "hello", "target_lang": "hi-Latn", "source_lang": "en"},
+    )
+    assert res.status_code == 200
+    assert res.json()["target_lang"] == "hi-Latn"
 
 
 def test_translate_text_endpoint():
