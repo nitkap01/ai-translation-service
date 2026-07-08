@@ -15,5 +15,8 @@ models/
 *.bin
 *.safetensors
 
+# Generated audio from the end-to-end check
+samples/
+
 # OS
 .DS_Store

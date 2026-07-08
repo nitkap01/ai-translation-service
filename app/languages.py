@@ -9,7 +9,9 @@ This registry keeps all of them in one place so the pipeline can look up the
 right code for each step. A language only appears here if all three stages
 support it, so the UI never offers something that will fail downstream.
 
-`uroman` marks languages whose script must be romanised before MMS-TTS.
+Every MMS voice we ship speaks its own native script, and NLLB already outputs
+that script, so no romanisation is needed. (The TTS layer still romanises
+automatically for the rare voice whose tokenizer asks for it.)
 """
 
 from dataclasses import dataclass
@@ -22,22 +24,21 @@ class Language:
     whisper: str  # faster-whisper language code
     nllb: str  # NLLB FLORES-200 code
     mms: str  # MMS-TTS ISO 639-3 code
-    uroman: bool  # TTS input must be romanised first
 
 
 LANGUAGES: list[Language] = [
-    Language("en", "English", "en", "eng_Latn", "eng", False),
-    Language("hi", "Hindi", "hi", "hin_Deva", "hin", True),
-    Language("es", "Spanish", "es", "spa_Latn", "spa", False),
-    Language("fr", "French", "fr", "fra_Latn", "fra", False),
-    Language("de", "German", "de", "deu_Latn", "deu", False),
-    Language("it", "Italian", "it", "ita_Latn", "ita", False),
-    Language("pt", "Portuguese", "pt", "por_Latn", "por", False),
-    Language("ru", "Russian", "ru", "rus_Cyrl", "rus", True),
-    Language("ar", "Arabic", "ar", "arb_Arab", "ara", True),
-    Language("bn", "Bengali", "bn", "ben_Beng", "ben", True),
-    Language("ta", "Tamil", "ta", "tam_Taml", "tam", True),
-    Language("mr", "Marathi", "mr", "mar_Deva", "mar", True),
+    Language("en", "English", "en", "eng_Latn", "eng"),
+    Language("hi", "Hindi", "hi", "hin_Deva", "hin"),
+    Language("es", "Spanish", "es", "spa_Latn", "spa"),
+    Language("fr", "French", "fr", "fra_Latn", "fra"),
+    Language("de", "German", "de", "deu_Latn", "deu"),
+    Language("it", "Italian", "it", "ita_Latn", "ita"),
+    Language("pt", "Portuguese", "pt", "por_Latn", "por"),
+    Language("ru", "Russian", "ru", "rus_Cyrl", "rus"),
+    Language("ar", "Arabic", "ar", "arb_Arab", "ara"),
+    Language("bn", "Bengali", "bn", "ben_Beng", "ben"),
+    Language("ta", "Tamil", "ta", "tam_Taml", "tam"),
+    Language("mr", "Marathi", "mr", "mar_Deva", "mar"),
 ]
 
 _BY_CODE = {lang.code: lang for lang in LANGUAGES}

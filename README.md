@@ -73,8 +73,13 @@ Open **http://localhost:8000**. The first request loads the models into memory
 ## Test
 
 ```bash
-pytest        # 22 tests, runs in seconds — models are mocked, no download needed
+pytest                          # 21 fast tests — models mocked, no download needed
+python scripts/e2e_check.py     # real end-to-end run with the actual models
 ```
+
+The end-to-end check translates text to Hindi and runs a full
+speech → translate → speech round-trip, saving the spoken output to `samples/`
+so you can listen.
 
 ---
 
@@ -98,8 +103,8 @@ output) support it, so the UI never offers something that fails halfway.
 
 - **Hinglish** (Hindi + English mixed in one sentence) can confuse the language
   detector. Set the source language manually when that happens.
-- **MMS-TTS voices** are clear but a little robotic. Some languages need
-  romanisation (handled automatically via uroman).
+- **MMS-TTS voices** are clear but a little robotic. Each voice speaks its own
+  native script (Devanagari, Cyrillic, Arabic, …), which NLLB already produces.
 - CPU/MPS inference: fine for short clips; long audio takes proportionally longer.
 
 ---

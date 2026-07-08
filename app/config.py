@@ -7,6 +7,13 @@ runs on a laptop (CPU/MPS) or a bigger box without edits.
 import os
 from pathlib import Path
 
+# Set before torch / huggingface_hub are imported anywhere.
+# - MPS fallback: let unsupported Apple-GPU ops run on CPU instead of erroring.
+# - Disable the HF Xet transfer backend, which can stall on some networks;
+#   classic HTTPS downloads are reliable. Both can be overridden in the env.
+os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
+os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 WEB_DIR = BASE_DIR / "web"
 

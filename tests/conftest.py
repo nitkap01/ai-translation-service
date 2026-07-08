@@ -26,7 +26,7 @@ def fake_translate(text, src_nllb, tgt_nllb):
     return f"[{tgt_nllb}] {text}"
 
 
-def fake_synthesize(text, mms_code, uroman=False):
+def fake_synthesize(text, mms_code):
     # Half a second of silence at 16 kHz — enough to encode a real WAV.
     return np.zeros(8000, dtype=np.float32), 16000
 

@@ -14,14 +14,9 @@ def test_hindi_and_english_are_supported():
     assert languages.get("en").name == "English"
 
 
-def test_latin_scripts_do_not_need_uroman():
-    for code in ("en", "es", "fr", "de", "it", "pt"):
-        assert languages.get(code).uroman is False
-
-
-def test_devanagari_and_other_scripts_need_uroman():
-    for code in ("hi", "ru", "ar", "bn", "ta", "mr"):
-        assert languages.get(code).uroman is True
+def test_all_twelve_languages_present():
+    codes = {lang.code for lang in languages.LANGUAGES}
+    assert {"en", "hi", "es", "fr", "de", "it", "pt", "ru", "ar", "bn", "ta", "mr"} == codes
 
 
 def test_unknown_and_empty_lookups_return_none():

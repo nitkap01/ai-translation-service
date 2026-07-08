@@ -25,7 +25,7 @@ def _speak(text: str, target_code: str) -> tuple[str | None, str | None]:
     if not text.strip():
         return None, None
     try:
-        samples, sample_rate = tts.synthesize(text, lang.mms, uroman=lang.uroman)
+        samples, sample_rate = tts.synthesize(text, lang.mms)
         wav = audio.encode_wav(samples, sample_rate)
         data_uri = "data:audio/wav;base64," + base64.b64encode(wav).decode("ascii")
         return data_uri, None
