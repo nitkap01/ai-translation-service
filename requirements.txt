@@ -1,0 +1,7 @@
+# Base runtime — the web server, audio handling, and text-language detection.
+# Lightweight; installs in seconds. The ML models live in requirements-ml.txt.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+numpy>=1.26
+langdetect>=1.0.9

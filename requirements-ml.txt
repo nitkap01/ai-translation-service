@@ -1,0 +1,9 @@
+# Machine-learning stack — several gigabytes. Install after freeing disk space.
+#   pip install -r requirements-ml.txt
+torch>=2.2
+transformers>=4.44
+faster-whisper>=1.0
+sentencepiece>=0.2
+protobuf>=4.25
+huggingface-hub>=0.24
+uroman>=1.3

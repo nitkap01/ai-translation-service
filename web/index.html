@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Translation Service</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗣️</text></svg>"
+    />
+  </head>
+  <body>
+    <main class="app">
+      <header class="head">
+        <h1>🗣️ AI Translation Service</h1>
+        <p class="sub">Speak or type. Translate to any language. Hear it back.</p>
+      </header>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-mode="text" role="tab">Type text</button>
+        <button class="tab" data-mode="audio" role="tab">Speak / upload</button>
+      </div>
+
+      <section class="card">
+        <!-- Text input -->
+        <div class="pane" data-pane="text">
+          <label class="field">
+            <span>Your text</span>
+            <textarea id="text-input" rows="4" placeholder="Type something to translate…"></textarea>
+          </label>
+        </div>
+
+        <!-- Audio input -->
+        <div class="pane hidden" data-pane="audio">
+          <div class="recorder">
+            <button id="record-btn" class="rec">● Record</button>
+            <span id="rec-status" class="rec-status">Ready</span>
+            <span class="or">or</span>
+            <label class="file-btn">
+              Upload file
+              <input id="file-input" type="file" accept="audio/*" hidden />
+            </label>
+          </div>
+          <audio id="input-preview" class="preview hidden" controls></audio>
+          <label class="field">
+            <span>Accent / vocabulary hints <em>(optional)</em></span>
+            <input
+              id="hints-input"
+              type="text"
+              placeholder="Names or words you often say — helps recognise your accent"
+            />
+          </label>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+          <label class="select">
+            <span>From</span>
+            <select id="source-lang"></select>
+          </label>
+          <span class="arrow">→</span>
+          <label class="select">
+            <span>To</span>
+            <select id="target-lang"></select>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="speak-toggle" checked />
+            <span>Speak result</span>
+          </label>
+        </div>
+
+        <button id="go-btn" class="go">Translate</button>
+      </section>
+
+      <section id="result" class="card result hidden">
+        <div class="result-row">
+          <h2>Heard / typed</h2>
+          <p id="source-text" class="source-text"></p>
+          <span id="detected" class="badge hidden"></span>
+        </div>
+        <div class="result-row">
+          <h2 id="target-title">Translation</h2>
+          <p id="target-text" class="target-text"></p>
+          <audio id="result-audio" class="preview hidden" controls></audio>
+        </div>
+        <div id="notes" class="notes hidden"></div>
+      </section>
+
+      <div id="error" class="error hidden"></div>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
